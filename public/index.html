@@ -8,107 +8,109 @@
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
-      min-height: 100vh;
+      background: #f0f2f5;
+      height: 100vh;
     }
     #login-screen {
-      display: flex; justify-content: center; align-items: center; min-height: 100vh;
+      display: flex; justify-content: center; align-items: center;
+      min-height: 100vh;
     }
     .login-box {
-      background: rgba(255,255,255,0.95); padding: 40px; border-radius: 16px;
-      box-shadow: 0 10px 40px rgba(0,0,0,0.3); text-align: center; width: 340px;
+      background: white; padding: 40px; border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1); text-align: center; width: 340px;
     }
-    .login-box h1 { margin-bottom: 8px; color: #1a1a2e; font-size: 24px; }
+    .login-box h1 { margin-bottom: 8px; color: #333; font-size: 24px; }
     .login-box .subtitle { color: #666; margin-bottom: 8px; font-size: 14px; }
     .login-box .lock-note {
       color: #0f3460; margin-bottom: 20px; font-size: 12px;
       background: #e8f4f8; padding: 8px 12px; border-radius: 8px;
     }
     .login-box input {
-      width: 100%; padding: 12px 15px; font-size: 15px; border: 2px solid #ddd;
-      border-radius: 8px; margin-bottom: 12px; outline: none;
+      width: 100%; padding: 12px 15px; font-size: 15px; border: 2px solid #e0e0e0;
+      border-radius: 8px; margin-bottom: 12px; outline: none; color: #333;
     }
     .login-box input:focus { border-color: #0f3460; }
     .login-box input::placeholder { color: #aaa; }
     .login-box button {
       width: 100%; padding: 12px; font-size: 16px;
-      background: linear-gradient(135deg, #0f3460 0%, #16213e 100%);
-      color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;
+      background: #0f3460; color: white; border: none; border-radius: 8px;
+      cursor: pointer; font-weight: 600;
     }
     .login-box button:hover { opacity: 0.9; }
-    .login-box button:disabled { opacity: 0.5; cursor: not-allowed; }
     #chat-screen { display: none; flex-direction: column; height: 100vh; }
     .chat-header {
-      background: rgba(255,255,255,0.95); padding: 12px 20px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+      background: #0f3460; padding: 12px 20px;
       display: flex; align-items: center; justify-content: space-between;
+      color: white;
     }
-    .chat-header h2 { color: #1a1a2e; font-size: 16px; }
+    .chat-header h2 { font-size: 16px; color: white; }
     .chat-header .encryption-badge {
-      font-size: 12px; background: #d4edda; color: #155724;
+      font-size: 12px; background: rgba(255,255,255,0.2); color: white;
       padding: 4px 10px; border-radius: 12px;
     }
     .chat-messages {
-      flex: 1; overflow-y: auto; padding: 20px; background: rgba(0,0,0,0.2);
+      flex: 1; overflow-y: auto; padding: 20px;
+      display: flex; flex-direction: column; align-items: center;
+      background: #f0f2f5;
     }
-    .message { margin-bottom: 15px; display: flex; flex-direction: column; max-width: 70%; }
+    .message { margin-bottom: 12px; display: flex; flex-direction: column; max-width: 75%; }
     .message.self { align-self: flex-end; align-items: flex-end; }
     .message.other { align-self: flex-start; align-items: flex-start; }
     .message.system { align-self: center; align-items: center; max-width: 100%; }
-    .message-name { font-size: 12px; color: rgba(255,255,255,0.7); margin-bottom: 4px; }
+    .message-name { font-size: 11px; color: #999; margin-bottom: 3px; padding: 0 8px; }
     .message-content {
-      padding: 10px 15px; border-radius: 12px; word-wrap: break-word;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+      padding: 8px 14px; border-radius: 10px; word-wrap: break-word;
+      max-width: 100%; line-height: 1.5;
     }
     .message.self .message-content {
-      background: linear-gradient(135deg, #0f3460 0%, #16213e 100%); color: white;
-      border-bottom-right-radius: 4px;
+      background: #0f3460; color: white; border-top-right-radius: 4px;
     }
     .message.other .message-content {
-      background: rgba(255,255,255,0.95); color: #333;
-      border-bottom-left-radius: 4px;
+      background: white; color: #333; border-top-left-radius: 4px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
     }
     .message-content.decrypt-fail {
       background: #fff3cd !important; color: #856404 !important;
     }
     .message.system .message-content {
-      background: rgba(255,255,255,0.15); color: rgba(255,255,255,0.8);
-      font-size: 13px; padding: 6px 14px; border-radius: 20px;
+      background: rgba(0,0,0,0.06); color: #999;
+      font-size: 12px; padding: 4px 12px; border-radius: 12px;
     }
-    .message-time { font-size: 11px; color: rgba(255,255,255,0.5); margin-top: 4px; }
-    .message-image { max-width: 280px; max-height: 280px; border-radius: 8px; cursor: pointer; }
+    .message-time { font-size: 10px; color: #bbb; margin-top: 2px; padding: 0 8px; }
+    .message-image {
+      max-width: 250px; max-height: 250px; border-radius: 8px; cursor: pointer; display: block;
+    }
     .chat-input {
-      background: rgba(255,255,255,0.95); padding: 12px 15px;
-      box-shadow: 0 -2px 10px rgba(0,0,0,0.2);
+      background: white; padding: 12px 16px; border-top: 1px solid #e8e8e8;
     }
     .input-row { display: flex; gap: 8px; align-items: center; }
     .chat-input input {
-      flex: 1; padding: 10px 14px; font-size: 14px; border: 2px solid #ddd;
-      border-radius: 25px; outline: none;
+      flex: 1; padding: 10px 14px; font-size: 14px; border: 1px solid #e0e0e0;
+      border-radius: 20px; outline: none; color: #333; background: #f5f5f5;
     }
-    .chat-input input:focus { border-color: #0f3460; }
+    .chat-input input:focus { border-color: #0f3460; background: white; }
     .emoji-btn, .send-btn, .image-btn {
-      padding: 8px 14px; font-size: 18px; background: #f0f0f0;
-      border: none; border-radius: 25px; cursor: pointer;
+      padding: 8px 12px; font-size: 18px; background: #f5f5f5;
+      border: 1px solid #e0e0e0; border-radius: 20px; cursor: pointer;
     }
-    .emoji-btn:hover, .image-btn:hover { background: #e0e0e0; }
+    .emoji-btn:hover, .image-btn:hover { background: #e8e8e8; }
     .send-btn {
-      background: linear-gradient(135deg, #0f3460 0%, #16213e 100%);
-      color: white; font-weight: 600; padding: 8px 22px;
+      background: #0f3460; color: white; font-weight: 600; border: none; padding: 8px 20px;
     }
     .send-btn:hover { opacity: 0.9; }
     .emoji-picker {
-      display: none; position: absolute; bottom: 70px; left: 15px;
+      display: none; position: absolute; bottom: 70px; left: 16px;
       background: white; border-radius: 12px;
-      box-shadow: 0 5px 20px rgba(0,0,0,0.3); padding: 12px; z-index: 100;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.15); padding: 12px; z-index: 100;
+      border: 1px solid #e8e8e8;
     }
     .emoji-picker.show { display: block; }
     .emoji-grid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 2px; }
     .emoji-item { font-size: 22px; padding: 4px; cursor: pointer; border-radius: 6px; text-align: center; }
     .emoji-item:hover { background: #f0f0f0; }
     input[type="file"] { display: none; }
-    .chat-messages::-webkit-scrollbar { width: 5px; }
-    .chat-messages::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 3px; }
+    .chat-messages::-webkit-scrollbar { width: 4px; }
+    .chat-messages::-webkit-scrollbar-thumb { background: #ddd; border-radius: 2px; }
   </style>
 </head>
 <body>
@@ -125,7 +127,7 @@
   <div id="chat-screen">
     <div class="chat-header">
       <h2>&#x1F512; 加密聊天室</h2>
-      <div id="encryption-badge" class="encryption-badge">&#x1F512; 加密已启用</div>
+      <div class="encryption-badge">&#x1F512; 加密已启用</div>
     </div>
     <div class="chat-messages" id="messages"></div>
     <div class="chat-input" style="position: relative;">
@@ -180,9 +182,7 @@
     const socket = io();
     let myName = "";
     let keyArrayBuffer = null;
-    let cryptoKey = null;
 
-    // ArrayBuffer <-> Base64 转换
     function bufferToBase64(buf) {
       let binary = "";
       const bytes = new Uint8Array(buf);
@@ -202,7 +202,6 @@
       return bytes.buffer;
     }
 
-    // 从密码派生密钥
     async function deriveKey(password, saltBuffer) {
       const enc = new TextEncoder();
       const keyMaterial = await crypto.subtle.importKey(
@@ -217,7 +216,6 @@
       );
     }
 
-    // 加密
     async function encryptMessage(text) {
       const salt = crypto.getRandomValues(new Uint8Array(16));
       const iv = crypto.getRandomValues(new Uint8Array(12));
@@ -233,7 +231,6 @@
       return bufferToBase64(result.buffer);
     }
 
-    // 解密
     async function decryptMessage(base64Data) {
       const data = new Uint8Array(base64ToBuffer(base64Data));
       const salt = data.subarray(0, 16);
@@ -246,7 +243,6 @@
       return new TextDecoder().decode(decrypted);
     }
 
-    // 密钥哈希（仅用于本地确认密钥一致，不发送给服务器）
     async function hashKey(keyBuffer) {
       const hashBuffer = await crypto.subtle.digest("SHA-256", keyBuffer);
       let hash = "";
@@ -257,7 +253,12 @@
       return hash.substring(0, 16);
     }
 
-    // 加载历史消息
+    function escapeHtml(text) {
+      const div = document.createElement("div");
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
     async function loadHistory() {
       try {
         const resp = await fetch("/api/messages");
@@ -322,12 +323,6 @@
       messagesDiv.scrollTop = messagesDiv.scrollHeight;
     }
 
-    function escapeHtml(text) {
-      const div = document.createElement("div");
-      div.textContent = text;
-      return div.innerHTML;
-    }
-
     async function joinChat() {
       const name = document.getElementById("username").value.trim();
       const key = document.getElementById("key-input").value;
@@ -349,7 +344,6 @@
       document.getElementById("login-screen").style.display = "none";
       document.getElementById("chat-screen").style.display = "flex";
       
-      // 加载历史消息
       await loadHistory();
     }
 
@@ -424,4 +418,3 @@
   </script>
 </body>
 </html>
-
