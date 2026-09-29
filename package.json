@@ -1,0 +1,13 @@
+{
+  "name": "chat-site",
+  "version": "1.0.0",
+  "description": "Simple chat room for couples",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "socket.io": "^4.7.0",
+    "express": "^4.18.2"
+  }
+}

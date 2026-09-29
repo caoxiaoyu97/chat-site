@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>加密聊天室</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+      min-height: 100vh;
+    }
+    #login-screen {
+      display: flex; justify-content: center; align-items: center; min-height: 100vh;
+    }
+    .login-box {
+      background: rgba(255,255,255,0.95); padding: 40px; border-radius: 16px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.3); text-align: center; width: 340px;
+    }
+    .login-box h1 { margin-bottom: 8px; color: #1a1a2e; font-size: 24px; }
+    .login-box .subtitle { color: #666; margin-bottom: 8px; font-size: 14px; }
+    .login-box .lock-note {
+      color: #0f3460; margin-bottom: 20px; font-size: 12px;
+      background: #e8f4f8; padding: 8px 12px; border-radius: 8px;
+    }
+    .login-box input {
+      width: 100%; padding: 12px 15px; font-size: 15px; border: 2px solid #ddd;
+      border-radius: 8px; margin-bottom: 12px; outline: none;
+    }
+    .login-box input:focus { border-color: #0f3460; }
+    .login-box input::placeholder { color: #aaa; }
+    .login-box button {
+      width: 100%; padding: 12px; font-size: 16px;
+      background: linear-gradient(135deg, #0f3460 0%, #16213e 100%);
+      color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;
+    }
+    .login-box button:hover { opacity: 0.9; }
+    .login-box button:disabled { opacity: 0.5; cursor: not-allowed; }
+    #chat-screen { display: none; flex-direction: column; height: 100vh; }
+    .chat-header {
+      background: rgba(255,255,255,0.95); padding: 12px 20px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .chat-header h2 { color: #1a1a2e; font-size: 16px; }
+    .chat-header .encryption-badge {
+      font-size: 12px; background: #d4edda; color: #155724;
+      padding: 4px 10px; border-radius: 12px;
+    }
+    .chat-messages {
+      flex: 1; overflow-y: auto; padding: 20px; background: rgba(0,0,0,0.2);
+    }
+    .message { margin-bottom: 15px; display: flex; flex-direction: column; max-width: 70%; }
+    .message.self { align-self: flex-end; align-items: flex-end; }
+    .message.other { align-self: flex-start; align-items: flex-start; }
+    .message.system { align-self: center; align-items: center; max-width: 100%; }
+    .message-name { font-size: 12px; color: rgba(255,255,255,0.7); margin-bottom: 4px; }
+    .message-content {
+      padding: 10px 15px; border-radius: 12px; word-wrap: break-word;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    }
+    .message.self .message-content {
+      background: linear-gradient(135deg, #0f3460 0%, #16213e 100%); color: white;
+      border-bottom-right-radius: 4px;
+    }
+    .message.other .message-content {
+      background: rgba(255,255,255,0.95); color: #333;
+      border-bottom-left-radius: 4px;
+    }
+    .message-content.decrypt-fail {
+      background: #fff3cd !important; color: #856404 !important;
+    }
+    .message.system .message-content {
+      background: rgba(255,255,255,0.15); color: rgba(255,255,255,0.8);
+      font-size: 13px; padding: 6px 14px; border-radius: 20px;
+    }
+    .message-time { font-size: 11px; color: rgba(255,255,255,0.5); margin-top: 4px; }
+    .message-image { max-width: 280px; max-height: 280px; border-radius: 8px; cursor: pointer; }
+    .chat-input {
+      background: rgba(255,255,255,0.95); padding: 12px 15px;
+      box-shadow: 0 -2px 10px rgba(0,0,0,0.2);
+    }
+    .input-row { display: flex; gap: 8px; align-items: center; }
+    .chat-input input {
+      flex: 1; padding: 10px 14px; font-size: 14px; border: 2px solid #ddd;
+      border-radius: 25px; outline: none;
+    }
+    .chat-input input:focus { border-color: #0f3460; }
+    .emoji-btn, .send-btn, .image-btn {
+      padding: 8px 14px; font-size: 18px; background: #f0f0f0;
+      border: none; border-radius: 25px; cursor: pointer;
+    }
+    .emoji-btn:hover, .image-btn:hover { background: #e0e0e0; }
+    .send-btn {
+      background: linear-gradient(135deg, #0f3460 0%, #16213e 100%);
+      color: white; font-weight: 600; padding: 8px 22px;
+    }
+    .send-btn:hover { opacity: 0.9; }
+    .emoji-picker {
+      display: none; position: absolute; bottom: 70px; left: 15px;
+      background: white; border-radius: 12px;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.3); padding: 12px; z-index: 100;
+    }
+    .emoji-picker.show { display: block; }
+    .emoji-grid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 2px; }
+    .emoji-item { font-size: 22px; padding: 4px; cursor: pointer; border-radius: 6px; text-align: center; }
+    .emoji-item:hover { background: #f0f0f0; }
+    input[type="file"] { display: none; }
+    .chat-messages::-webkit-scrollbar { width: 5px; }
+    .chat-messages::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 3px; }
+  </style>
+</head>
+<body>
+  <div id="login-screen">
+    <div class="login-box">
+      <h1>&#x1F512; 加密聊天室</h1>
+      <p class="subtitle">和对象甜蜜聊天吧~</p>
+      <div class="lock-note">&#x1F512; 端到端加密 &middot; 密钥仅本地处理</div>
+      <input type="text" id="username" placeholder="你的名字" maxlength="20">
+      <input type="password" id="key-input" placeholder="加密密钥（双方必须一致）" maxlength="50">
+      <button onclick="joinChat()">进入聊天室</button>
+    </div>
+  </div>
+  <div id="chat-screen">
+    <div class="chat-header">
+      <h2>&#x1F512; 加密聊天室</h2>
+      <div id="encryption-badge" class="encryption-badge">&#x1F512; 加密已启用</div>
+    </div>
+    <div class="chat-messages" id="messages"></div>
+    <div class="chat-input" style="position: relative;">
+      <div class="input-row">
+        <button class="emoji-btn" onclick="toggleEmojiPicker()">&#x1F60A;</button>
+        <input type="text" id="message" placeholder="输入加密消息..." maxlength="500">
+        <button class="image-btn" onclick="document.getElementById(\'image-input\').click()">&#x1F5BC;&#xFE0F;</button>
+        <input type="file" id="image-input" accept="image/*" onchange="sendImage()">
+        <button class="send-btn" onclick="sendMessage()">发送</button>
+      </div>
+    </div>
+    <div class="emoji-picker" id="emoji-picker">
+      <div class="emoji-grid">
+        <div class="emoji-item" onclick="insertEmoji(\'&#x1F60A;\')">&#x1F60A;</div>
+        <div class="emoji-item" onclick="insertEmoji(\'&#x1F602;\')">&#x1F602;</div>
+        <div class="emoji-item" onclick="insertEmoji(\'&#x2764;&#xFE0F;\')">&#x2764;&#xFE0F;</div>
+        <div class="emoji-item" onclick="insertEmoji(\'&#x1F618;\')">&#x1F618;</div>
+        <div class="emoji-item" onclick="insertEmoji(\'&#x1F970;\')">&#x1F970;</div>
+        <div class="emoji-item" onclick="insertEmoji(\'&#x1F60D;\')">&#x1F60D;</div>
+        <div class="emoji-item" onclick="insertEmoji(\'&#x1F60B;\')">&#x1F60B;</div>
+        <div class="emoji-item" onclick="insertEmoji(\'&#x1F60E;\')">&#x1F60E;</div>
+        <div class="emoji-item" onclick="insertEmoji(\'&#x1F917;\')">&#x1F917;</div>
+        <div class="emoji-item" onclick="insertEmoji(\'&#x1F622;\')">&#x1F622;</div>
+        <div class="emoji-item" onclick="insertEmoji(\'&#x1F624;\')">&#x1F624;</div>
+        <div class="emoji-item" onclick="insertEmoji(\'&#x1F97A;\')">&#x1F97A;</div>
+        <div class="emoji-item" onclick="insertEmoji(\'&#x1F631;\')">&#x1F631;</div>
+        <div class="emoji-item" onclick="insertEmoji(\'&#x1F634;\')">&#x1F634;</div>
+        <div class="emoji-item" onclick="insertEmoji(\'&#x1F914;\')">&#x1F914;</div>
+        <div class="emoji-item" onclick="insertEmoji(\'&#x1F606;\')">&#x1F606;</div>
+        <div class="emoji-item" onclick="insertEmoji(\'&#x1F44D;\')">&#x1F44D;</div>
+        <div class="emoji-item" onclick="insertEmoji(\'&#x1F44F;\')">&#x1F44F;</div>
+        <div class="emoji-item" onclick="insertEmoji(\'&#x1F64F;\')">&#x1F64F;</div>
+        <div class="emoji-item" onclick="insertEmoji(\'&#x1F4AA;\')">&#x1F4AA;</div>
+        <div class="emoji-item" onclick="insertEmoji(\'&#x2728;\')">&#x2728;</div>
+        <div class="emoji-item" onclick="insertEmoji(\'&#x1F339;\')">&#x1F339;</div>
+        <div class="emoji-item" onclick="insertEmoji(\'&#x1F490;\')">&#x1F490;</div>
+        <div class="emoji-item" onclick="insertEmoji(\'&#x1F389;\')">&#x1F389;</div>
+        <div class="emoji-item" onclick="insertEmoji(\'&#x1F38A;\')">&#x1F38A;</div>
+        <div class="emoji-item" onclick="insertEmoji(\'&#x1F340;\')">&#x1F340;</div>
+        <div class="emoji-item" onclick="insertEmoji(\'&#x1F308;\')">&#x1F308;</div>
+        <div class="emoji-item" onclick="insertEmoji(\'&#x2600;&#xFE0F;\')">&#x2600;&#xFE0F;</div>
+        <div class="emoji-item" onclick="insertEmoji(\'&#x1F319;\')">&#x1F319;</div>
+        <div class="emoji-item" onclick="insertEmoji(\'&#x2B50;\')">&#x2B50;</div>
+        <div class="emoji-item" onclick="insertEmoji(\'&#x1F495;\')">&#x1F495;</div>
+        <div class="emoji-item" onclick="insertEmoji(\'&#x1F496;\')">&#x1F496;</div>
+        <div class="emoji-item" onclick="insertEmoji(\'&#x1F497;\')">&#x1F497;</div>
+      </div>
+    </div>
+  </div>
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io();
+    let myName = "";
+    let keyArrayBuffer = null;
+    let cryptoKey = null;
+
+    // ArrayBuffer <-> Base64 转换
+    function bufferToBase64(buf) {
+      let binary = "";
+      const bytes = new Uint8Array(buf);
+      const chunkSize = 0x8000;
+      for (let i = 0; i < bytes.length; i += chunkSize) {
+        const chunk = bytes.subarray(i, Math.min(i + chunkSize, bytes.length));
+        binary += String.fromCharCode.apply(null, chunk);
+      }
+      return btoa(binary);
+    }
+    function base64ToBuffer(b64) {
+      const binary = atob(b64);
+      const bytes = new Uint8Array(binary.length);
+      for (let i = 0; i < binary.length; i++) {
+        bytes[i] = binary.charCodeAt(i);
+      }
+      return bytes.buffer;
+    }
+
+    // 从密码派生密钥
+    async function deriveKey(password, saltBuffer) {
+      const enc = new TextEncoder();
+      const keyMaterial = await crypto.subtle.importKey(
+        "raw", enc.encode(password), "PBKDF2", false, ["deriveKey"]
+      );
+      return crypto.subtle.deriveKey(
+        { name: "PBKDF2", salt: saltBuffer, iterations: 100000, hash: "SHA-256" },
+        keyMaterial,
+        { name: "AES-GCM", length: 256 },
+        false,
+        ["encrypt", "decrypt"]
+      );
+    }
+
+    // 加密
+    async function encryptMessage(text) {
+      const salt = crypto.getRandomValues(new Uint8Array(16));
+      const iv = crypto.getRandomValues(new Uint8Array(12));
+      const enc = new TextEncoder();
+      const key = await deriveKey(keyArrayBuffer, salt);
+      const ciphertext = await crypto.subtle.encrypt(
+        { name: "AES-GCM", iv }, key, enc.encode(text)
+      );
+      const result = new Uint8Array(salt.length + iv.length + ciphertext.byteLength);
+      result.set(salt, 0);
+      result.set(iv, salt.length);
+      result.set(new Uint8Array(ciphertext), salt.length + iv.length);
+      return bufferToBase64(result.buffer);
+    }
+
+    // 解密
+    async function decryptMessage(base64Data) {
+      const data = new Uint8Array(base64ToBuffer(base64Data));
+      const salt = data.subarray(0, 16);
+      const iv = data.subarray(16, 28);
+      const ciphertext = data.subarray(28);
+      const key = await deriveKey(keyArrayBuffer, salt);
+      const decrypted = await crypto.subtle.decrypt(
+        { name: "AES-GCM", iv }, key, ciphertext
+      );
+      return new TextDecoder().decode(decrypted);
+    }
+
+    // 密钥哈希（仅用于本地确认密钥一致，不发送给服务器）
+    async function hashKey(keyBuffer) {
+      const hashBuffer = await crypto.subtle.digest("SHA-256", keyBuffer);
+      let hash = "";
+      const bytes = new Uint8Array(hashBuffer);
+      for (let i = 0; i < bytes.length; i++) {
+        hash += bytes[i].toString(16).padStart(2, "0");
+      }
+      return hash.substring(0, 16);
+    }
+
+    // 加载历史消息
+    async function loadHistory() {
+      try {
+        const resp = await fetch("/api/messages");
+        const msgs = await resp.json();
+        for (const msg of msgs) {
+          renderMessage(msg);
+        }
+      } catch (e) {
+        console.log("暂无历史消息");
+      }
+    }
+
+    async function renderMessage(msg) {
+      if (msg.type === "encrypted" || msg.type === "encrypted-image") {
+        await handleEncryptedMessage(msg);
+      } else if (msg.type === "system") {
+        renderSystemMessage(msg);
+      }
+    }
+
+    async function handleEncryptedMessage(msg) {
+      try {
+        const decrypted = await decryptMessage(msg.content);
+        displayDecryptedMessage(msg, decrypted, true);
+      } catch (e) {
+        console.error("解密失败:", e);
+        displayDecryptedMessage(msg, "[密钥不一致，解密失败]", false);
+      }
+    }
+
+    function displayDecryptedMessage(msg, text, isOk) {
+      const messagesDiv = document.getElementById("messages");
+      const isSelf = msg.name === myName;
+      const el = document.createElement("div");
+      el.className = "message " + (isOk ? "" : "other");
+      
+      let contentHtml = "";
+      if (!isOk) {
+        contentHtml = escapeHtml(text);
+      } else if (msg.type === "encrypted-image") {
+        contentHtml = "<img src=\"" + text + "\" class=\"message-image\" onclick=\"window.open(this.src)\" />";
+      } else {
+        contentHtml = escapeHtml(text);
+      }
+      
+      const time = new Date(msg.timestamp).toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit" });
+      el.innerHTML = 
+        "<span class=\"message-name\">" + msg.name + "</span>" +
+        "<div class=\"message-content " + (isOk ? "" : "decrypt-fail") + "\">" + contentHtml + "</div>" +
+        "<span class=\"message-time\">" + time + "</span>";
+      
+      messagesDiv.appendChild(el);
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+
+    function renderSystemMessage(msg) {
+      const messagesDiv = document.getElementById("messages");
+      const el = document.createElement("div");
+      el.className = "message system";
+      el.innerHTML = "<div class=\"message-content\">" + msg.message + "</div>";
+      messagesDiv.appendChild(el);
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement("div");
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    async function joinChat() {
+      const name = document.getElementById("username").value.trim();
+      const key = document.getElementById("key-input").value;
+      
+      if (!name) { alert("请输入名字"); return; }
+      if (!key) { alert("请输入加密密钥"); return; }
+      
+      myName = name;
+      keyArrayBuffer = new TextEncoder().encode(key);
+      
+      try {
+        const hash = await hashKey(keyArrayBuffer);
+        socket.emit("join", { name: myName, cryptoHash: hash });
+      } catch (e) {
+        alert("密钥格式有问题");
+        return;
+      }
+      
+      document.getElementById("login-screen").style.display = "none";
+      document.getElementById("chat-screen").style.display = "flex";
+      
+      // 加载历史消息
+      await loadHistory();
+    }
+
+    async function sendMessage() {
+      const input = document.getElementById("message");
+      const content = input.value.trim();
+      if (!content) return;
+      
+      try {
+        const encrypted = await encryptMessage(content);
+        socket.emit("message", { content: encrypted, type: "encrypted" });
+        input.value = "";
+      } catch (e) {
+        alert("加密失败");
+      }
+    }
+
+    async function sendImage() {
+      const file = document.getElementById("image-input").files[0];
+      if (!file) return;
+      if (file.size > 5 * 1024 * 1024) { alert("图片大小不能超过 5MB"); return; }
+      
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        try {
+          const encrypted = await encryptMessage(e.target.result);
+          socket.emit("message", { content: encrypted, type: "encrypted-image" });
+        } catch (e) {
+          alert("加密图片失败");
+        }
+      };
+      reader.readAsDataURL(file);
+      document.getElementById("image-input").value = "";
+    }
+
+    function toggleEmojiPicker() {
+      document.getElementById("emoji-picker").classList.toggle("show");
+    }
+
+    function insertEmoji(emoji) {
+      const input = document.getElementById("message");
+      input.value += emoji;
+      input.focus();
+      document.getElementById("emoji-picker").classList.remove("show");
+    }
+
+    socket.on("chat message", async (msg) => {
+      if (msg.type === "encrypted" || msg.type === "encrypted-image") {
+        await handleEncryptedMessage(msg);
+      }
+    });
+
+    socket.on("system", (data) => {
+      renderSystemMessage(data);
+    });
+
+    document.addEventListener("click", (e) => {
+      const picker = document.getElementById("emoji-picker");
+      const btn = document.querySelector(".emoji-btn");
+      if (!picker.contains(e.target) && e.target !== btn) picker.classList.remove("show");
+    });
+
+    document.getElementById("username").addEventListener("keypress", (e) => {
+      if (e.key === "Enter") joinChat();
+    });
+    document.getElementById("key-input").addEventListener("keypress", (e) => {
+      if (e.key === "Enter") joinChat();
+    });
+    document.getElementById("message").addEventListener("keypress", (e) => {
+      if (e.key === "Enter") sendMessage();
+    });
+  </script>
+</body>
+</html>
