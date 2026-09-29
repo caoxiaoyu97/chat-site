@@ -292,7 +292,7 @@
       const messagesDiv = document.getElementById("messages");
       const isSelf = msg.name === myName;
       const el = document.createElement("div");
-      el.className = "message " + (isOk ? "" : "other");
+      el.className = "message " + (isSelf ? "self" : "other");
       
       let contentHtml = "";
       if (!isOk) {
@@ -424,3 +424,4 @@
   </script>
 </body>
 </html>
+
