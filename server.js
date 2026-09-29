@@ -81,6 +81,10 @@ io.on("connection", (socket) => {
   });
 
   socket.on("message", (data) => {
+    if (!socket.userData) {
+      console.log("未加入聊天室的连接发送消息:", socket.id);
+      return;
+    }
     const msg = {
       name: socket.userData.name,
       content: data.content,
